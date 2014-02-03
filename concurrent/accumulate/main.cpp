@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <iostream>
+#include <numeric>
 #include <iomanip>
 #include <thread>
 #include <chrono>
@@ -51,10 +52,9 @@ namespace stuff
 int main()
 {
 	unsigned long long const last = 100000;
-	std::vector<size_t> values;
+	std::vector<size_t> values(last);
 
-	for (size_t it = 0; it != last; ++it)
-		values.push_back(it);
+	std::iota(values.begin(), values.end(), 0);
 
 	unsigned long long const expected = last * (last - 1) / 2;
 
