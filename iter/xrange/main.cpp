@@ -10,7 +10,7 @@ class range_iterator
 			ValTy,
 			boost::random_access_traversal_tag,
 			ValTy,
-			DiffTy>
+			long>
 {
 public:
 	range_iterator(ValTy value, DiffTy step)
@@ -29,8 +29,8 @@ public:
 	ValTy dereference() const
 	{ return value_; }
 
-	void advance(DiffTy diff)
-	{ value_ += diff; }
+	void advance(long n)
+	{ value_ += n * step_; }
 
 	DiffTy distance_to(range_iterator const & other) const
 	{ return other.value_ - value_; }
