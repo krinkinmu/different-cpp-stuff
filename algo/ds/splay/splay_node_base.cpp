@@ -19,6 +19,54 @@ namespace
 		return IsChild(node) && (node->m_parent->m_right == node);
 	}
 
+	void RotateLeft(SplayNodeBase *node, SplayNodeBase *parent) throw()
+	{
+		SplayNodeBase *const child = node->m_right;
+		SplayNodeBase *const grand = parent->m_parent;
+		SplaySetRight(node, parent);
+		SplaySetLeft(parent, child);
+		node->m_parent = grand;
+	}
+
+	void RotateRight(SplayNodeBase *node, SplayNodeBase *parent) throw()
+	{
+		SplayNodeBase *const child = node->m_left;
+		SplayNodeBase *const grand = parent->m_parent;
+		SplaySetLeft(node, parent);
+		SplaySetRight(parent, child);
+		node->m_parent = grand;
+	}
+
+	void RotateLeftLeft(SplayNodeBase *node, SplayNodeBase *parent,
+				SplayNodeBase *grand) throw()
+	{
+		RotateLeft(parent, grand);
+		RotateLeft(node, parent);
+	}
+
+	void RotateLeftRight(SplayNodeBase *node, SplayNodeBase *parent,
+				SplayNodeBase *grand) throw()
+	{
+		RotateLeft(node, parent);
+		SplaySetLeft(grand, node);
+		RotateRight(node, grand);
+	}
+
+	void RotateRightLeft(SplayNodeBase *node, SplayNodeBase *parent,
+				SplayNodeBase *grand) throw()
+	{
+		RotateRight(node, parent);
+		SplaySetRight(grand, parent);
+		RotateLeft(node, grand);
+	}
+
+	void RotateRightRight(SplayNodeBase *node, SplayNodeBase *parent,
+				SplayNodeBase *grand) throw()
+	{
+		RotateRight(parent, grand);
+		RotateRight(node, parent);
+	}
+
 } /* anonymous namespace */
 
 
@@ -28,18 +76,20 @@ SplayNodeBase::SplayNodeBase() throw()
 	, m_right(0)
 { }
 
-void SplayNodeBase::SetLeft(SplayNodeBase *node) throw()
+void SplaySetLeft(SplayNodeBase *parent, SplayNodeBase *child) throw()
 {
-	m_left = node;
-	if (node)
-		node->m_parent = this;
+	assert(parent);
+	parent->m_left = child;
+	if (child)
+		child->m_parent = parent;
 }
 
-void SplayNodeBase::SetRight(SplayNodeBase *node) throw()
+void SplaySetRight(SplayNodeBase *parent, SplayNodeBase *child) throw()
 {
-	m_right = node;
-	if (node)
-		node->m_parent = this;
+	assert(parent);
+	parent->m_right = child;
+	if (child)
+		child->m_parent = parent;
 }
 
 SplayNodeBase const *SplayLeftMost(SplayNodeBase const *node) throw()
@@ -106,4 +156,59 @@ SplayNodeBase *SplayPred(SplayNodeBase *node) throw()
 {
 	return const_cast<SplayNodeBase *>(
 		SplayPred(const_cast<SplayNodeBase const *>(node)));
+}
+
+void Splay(SplayNodeBase *node, SplayNodeBase *root) throw()
+{
+	while (node->m_parent != root)
+	{
+		SplayNodeBase *const parent = node->m_parent;
+		SplayNodeBase *const grand = parent->m_parent;
+
+		if (grand == root)
+		{
+			if (parent->m_left == node)
+				RotateRight(node, parent);
+			else
+				RotateLeft(node, parent);
+		}
+		else
+		{
+			if (grand->m_left == parent)
+			{
+				if (parent->m_left == node)
+					RotateRightRight(node, parent, grand);
+				else
+					RotateLeftRight(node, parent, grand);
+			}
+			else
+			{
+				if (parent->m_left == node)
+					RotateRightLeft(node, parent, grand);
+				else
+					RotateLeftLeft(node, parent, grand);
+			}
+		}
+	}
+}
+
+void SplayErase(SplayNodeBase *node, SplayNodeBase *root) throw()
+{
+	Splay(node, root);
+
+	if (!node->m_left)
+	{
+		SplaySetLeft(root, node->m_right);
+	}
+	else if (!node->m_right)
+	{
+		SplaySetLeft(root, node->m_left);
+	}
+	else
+	{
+		SplayNodeBase *const right = SplayRightMost(node->m_left);
+		Splay(right, node);
+		SplaySetRight(right, node->m_right);
+		SplaySetLeft(root, right);
+	}
 }

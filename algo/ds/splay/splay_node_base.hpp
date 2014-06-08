@@ -8,9 +8,10 @@ struct SplayNodeBase
 	SplayNodeBase *m_right;
 
 	SplayNodeBase() throw();
-	void SetLeft(SplayNodeBase *child) throw();
-	void SetRight(SplayNodeBase *child) throw();
 };
+
+void SplaySetLeft(SplayNodeBase *parent, SplayNodeBase *child) throw();
+void SplaySetRight(SplayNodeBase *parent, SplayNodeBase *child) throw();
 
 SplayNodeBase const *SplayLeftMost(SplayNodeBase const *node) throw();
 SplayNodeBase *SplayLeftMost(SplayNodeBase *node) throw();
@@ -21,5 +22,8 @@ SplayNodeBase const *SplaySucc(SplayNodeBase const *node) throw();
 SplayNodeBase *SplaySucc(SplayNodeBase *node) throw();
 SplayNodeBase const *SplayPred(SplayNodeBase const *node) throw();
 SplayNodeBase *SplayPred(SplayNodeBase *node) throw();
+
+void Splay(SplayNodeBase *node, SplayNodeBase *root) throw();
+void SplayErase(SplayNodeBase *node, SplayNodeBase *root) throw();
 
 #endif /*__SPLAY_HPP__*/
