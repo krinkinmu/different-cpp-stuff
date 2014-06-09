@@ -1,12 +1,24 @@
 CXX ?= g++
 CPPFLAGS += -Wall -Werror -pedantic -std=c++03
 
-default: splay_node_base.o
+SRCS = main.cpp splay_node_base.cpp
+OBJS = $(SRCS:.cpp=.o)
+DEPS = $(SRCS:.cpp=.d)
 
-splay_node_base.o : splay_node_base.cpp splay_node_base.hpp
-	$(CXX) -c $(CPPFLAGS) splay_node_base.cpp -o splay_node_base.o
+.PHONY : clean all
+
+all: test
+
+test: $(OBJS)
+	$(CXX) $(CPPFLAGS) $(LDFLAGS) $(OBJS) -o test
+
+.cpp.o:
+	$(CXX) $(CPPFLAGS) -c $< -o $@
+
+.cpp.d:
+	$(CXX) $(CPPFLAGS) -M $< > $@
 
 clean:
-	rm -f *.o
+	rm -f *.o *.d test
 
-.PHONY : clean
+-include $(DEPS)
