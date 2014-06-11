@@ -27,8 +27,8 @@ struct SplayTreeImpl : public NodeAllocator
 	void Init() throw()
 	{
 		m_header.m_parent = 0;
-		m_header.m_left = &m_header;
-		m_header.m_right = &m_header;
+		m_header.m_left = 0;
+		m_header.m_right = 0;
 	}
 
 	KeyCmp m_cmp;
@@ -42,6 +42,7 @@ class SplayTree
 {
 	typedef typename Alloc::template rebind< SplayNode<Val> >::other
 				NodeAllocator;
+	typedef SplayTree<Key, Val, KeyVal, Cmp, Alloc> SelfType;
 
 public:
 	typedef Key key_type;
@@ -63,11 +64,12 @@ public:
 		return allocator_type(GetAllocator());
 	}
 
-protected:
+private:
 	typedef SplayNodeBase * NodeBasePtr;
 	typedef SplayNodeBase const * NodeBaseConstPtr;
 	typedef SplayNode<Val> * NodePtr;
 	typedef SplayNode<Val> const * NodeConstPtr;
+	typedef SplayTreeImpl<Cmp, NodeAllocator> SplayImpl;
 
 	NodeAllocator & GetAllocator() throw()
 	{
@@ -117,36 +119,6 @@ protected:
 		tmp->m_left = 0;
 		tmp->m_right = 0;
 		return tmp;
-	}
-
-	NodeBasePtr & Root() throw()
-	{
-		return m_impl.m_header.m_parent;
-	}
-
-	NodeBaseConstPtr Root() const throw()
-	{
-		return m_impl.m_header.m_parent;
-	}
-
-	NodeBasePtr & LeftMost() throw()
-	{
-		return m_impl.m_header.m_left;
-	}
-
-	NodeBaseConstPtr LeftMost() const throw()
-	{
-		return m_impl.m_header.m_left;
-	}
-
-	NodeBasePtr & RightMost() throw()
-	{
-		return m_impl.m_header.m_right;
-	}
-
-	NodeBaseConstPtr RightMost() const throw()
-	{
-		return m_impl.m_header.m_right;
 	}
 
 	static const_reference GetValue(NodeConstPtr x) throw()
@@ -209,64 +181,144 @@ protected:
 		return SplayRightMost(x);
 	}
 
-public:
-	iterator Insert(NodeBasePtr p, value_type const & v)
+	NodeBaseConstPtr LowerBound(Key const & k) const throw()
 	{
-		NodeBasePtr ptr = CreateNode(v);
-
-		if (p == &m_impl.m_header)
-			ptr->m_parent = p;
-		else if (m_impl.m_cmp(GetKey(ptr), GetKey(p)))
-			SplaySetLeft(p, ptr);
-		else
-			SplaySetRight(p, ptr);
-
-		Splay(ptr, &m_impl.m_header);
-		++m_impl.m_size;
-
-		return iterator(ptr);
-	}
-
-	iterator LowerBound(Key const & k) throw()
-	{
-		NodeBasePtr parent = &m_impl.m_header;
-		NodePtr current = GetLeft(parent);
+		NodeBaseConstPtr parent = &m_impl.m_header;
+		NodeConstPtr current = GetLeft(parent);
 
 		while (current)
 		{
-			parent = current;
 			if (!m_impl.m_cmp(GetKey(current), k))
+			{
+				parent = current;
 				current = GetLeft(current);
+			}
 			else
+			{
 				current = GetRight(current);
+			}
 		}
 
-		Splay(parent, &m_impl.m_header);
-
-		return iterator(parent);
+		return parent;
 	}
 
-	iterator UpperBound(Key const & k) throw()
+	NodeBasePtr LowerBound(Key const & k) throw()
 	{
-		NodeBasePtr parent = &m_impl.m_header;
-		NodePtr current = GetLeft(parent);
+		return const_cast<NodeBasePtr>(
+			const_cast<SelfType const *>(this)->LowerBound(k));
+	}
+
+	NodeBaseConstPtr UpperBound(Key const & k) const throw()
+	{
+		NodeBaseConstPtr parent = &m_impl.m_header;
+		NodeConstPtr current = GetLeft(parent);
 
 		while (current)
 		{
-			parent = current;
 			if (m_impl.m_cmp(k, GetKey(current)))
-				current = GetLeft(current);
-			else
+			{
 				current = GetRight(current);
+			}
+			else
+			{
+				parent = current;
+				current = GetLeft(current);
+			}
 		}
 
-		Splay(parent, &m_impl.m_header);
+		return parent;
+	}
 
-		return iterator(parent);
+	NodeBasePtr UpperBound(Key const & k) throw()
+	{
+		return const_cast<NodeBasePtr>(
+			const_cast<SelfType const *>(this)->UpperBound(k));
+	}
+
+	NodeBasePtr Lookup(Key const & k) throw()
+	{
+		NodeBasePtr node = LowerBound(k);
+		if (node != &m_impl.m_header && !m_impl.m_cmp(GetKey(node), k))
+		{
+			Splay(node, &m_impl.m_header);
+			SplaySetLeft(&m_impl.m_header, node);
+			return node;
+		}
+
+		return &m_impl.m_header;
+	}
+
+public:
+	iterator begin() throw()
+	{
+		return iterator(GetMinimum(&m_impl.m_header));
+	}
+
+	const_iterator begin() const throw()
+	{
+		return const_iterator(GetMinimum(&m_impl.m_header));
+	}
+
+	reverse_iterator rbegin() throw()
+	{
+		return reverse_iterator(end());
+	}
+
+	const_reverse_iterator rbegin() const throw()
+	{
+		return const_reverse_iterator(end());
+	}
+
+	iterator end() throw()
+	{
+		return iterator(&m_impl.m_header);
+	}
+
+	const_iterator end() const throw()
+	{
+		return const_iterator(&m_impl.m_header);
+	}
+
+	reverse_iterator rend() throw()
+	{
+		return reverse_iterator(begin());
+	}
+
+	const_reverse_iterator rend() const throw()
+	{
+		return const_reverse_iterator(begin());
+	}
+
+	iterator lower_bound(Key const & k) throw()
+	{
+		return iterator(LowerBound(k));
+	}
+
+	iterator upper_bound(Key const & k) throw()
+	{
+		return iterator(UpperBound(k));
+	}
+
+	iterator equal_range(Key const & k) throw()
+	{
+		return std::make_pair(lower_bound(k), upper_bound(k));
+	}
+
+	iterator find(Key const & k) throw()
+	{
+		return iterator(Lookup(k));
+	}
+
+	std::pair<iterator, bool> insert_unique(value_type const & val)
+	{
+	}
+
+	iterator insert(value_type const & val)
+	{
 	}
 
 private:
-	SplayTreeImpl<Cmp, NodeAllocator> m_impl;
+	SplayImpl m_impl;
 };
 
 #endif /*__SPLAY_TREE_HPP__*/

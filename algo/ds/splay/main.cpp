@@ -4,6 +4,13 @@
 
 #include "splay_tree.hpp"
 
+template <typename T>
+struct Ident
+{
+	T const & operator()(T const & t) const
+	{ return t; }
+};
+
 int main()
 {
 	SplayNode<std::string> string_node;
@@ -29,6 +36,10 @@ int main()
 
 	assert(int_iterator.m_node == 0);
 	assert(int_const_iterator.m_node == 0);
+
+	SplayTree<int, int, Ident<int>, std::less<int> > tree;
+	assert(tree.begin() == tree.end());
+	assert(tree.rbegin() == tree.rend());
 
 	std::cout << "test is successfully passed" << std::endl;
 
