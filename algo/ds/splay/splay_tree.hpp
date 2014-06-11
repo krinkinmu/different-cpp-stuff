@@ -238,7 +238,8 @@ private:
 	NodeBasePtr Lookup(Key const & k) throw()
 	{
 		NodeBasePtr node = LowerBound(k);
-		if (node != &m_impl.m_header && !m_impl.m_cmp(GetKey(node), k))
+		if (node != &m_impl.m_header && !m_impl.m_cmp(GetKey(node), k)
+			&& !m_impl.m_cmp(k, GetKey(node))
 		{
 			Splay(node, &m_impl.m_header);
 			SplaySetLeft(&m_impl.m_header, node);
