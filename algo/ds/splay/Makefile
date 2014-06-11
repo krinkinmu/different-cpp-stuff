@@ -15,7 +15,7 @@ test: $(OBJS)
 .cpp.o:
 	$(CXX) $(CPPFLAGS) -c $< -o $@
 
-.cpp.d:
+%.d: %.cpp
 	$(CXX) $(CPPFLAGS) -M $< > $@
 
 clean:
