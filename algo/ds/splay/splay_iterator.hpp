@@ -22,7 +22,7 @@ struct SplayIterator
 		, m_node(0)
 	{ }
 
-	explicit SplayIterator(NodePtrType ptr) throw()
+	explicit SplayIterator(NodeBasePtrType ptr) throw()
 		: BaseType()
 		, m_node(ptr)
 	{ }
@@ -97,7 +97,7 @@ struct SplayConstIterator
 		, m_node(0)
 	{ }
 
-	explicit SplayConstIterator(NodePtrType ptr) throw()
+	explicit SplayConstIterator(NodeBasePtrType ptr) throw()
 		: BaseType()
 		, m_node(ptr)
 	{ }
