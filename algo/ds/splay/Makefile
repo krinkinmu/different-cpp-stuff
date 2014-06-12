@@ -1,5 +1,5 @@
 CXX ?= g++
-CPPFLAGS += -Wall -Werror -pedantic -std=c++03
+CPPFLAGS += -g -Wall -Werror -pedantic -std=c++03
 
 SRCS = main.cpp splay_node_base.cpp
 OBJS = $(SRCS:.cpp=.o)
