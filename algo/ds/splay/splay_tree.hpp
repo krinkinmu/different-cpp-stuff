@@ -88,7 +88,7 @@ private:
 
 	void PutNode(NodePtr ptr) throw()
 	{
-		GetAllocator().deallocate(ptr);
+		GetAllocator().deallocate(ptr, 1);
 	}
 
 	NodePtr CreateNode(value_type const &x)
@@ -217,12 +217,12 @@ private:
 		{
 			if (m_impl.m_cmp(k, GetKey(current)))
 			{
-				current = GetRight(current);
+				parent = current;
+				current = GetLeft(current);
 			}
 			else
 			{
-				parent = current;
-				current = GetLeft(current);
+				current = GetRight(current);
 			}
 		}
 
@@ -239,14 +239,45 @@ private:
 	{
 		NodeBasePtr node = LowerBound(k);
 		if (node != &m_impl.m_header && !m_impl.m_cmp(GetKey(node), k)
-			&& !m_impl.m_cmp(k, GetKey(node))
+			&& !m_impl.m_cmp(k, GetKey(node)))
 		{
 			Splay(node, &m_impl.m_header);
-			SplaySetLeft(&m_impl.m_header, node);
 			return node;
 		}
 
 		return &m_impl.m_header;
+	}
+
+	NodePtr Insert(value_type const & v)
+	{
+		NodeBasePtr parent = &m_impl.m_header;
+		NodePtr current = GetLeft(parent);
+		bool insert_left = true;
+
+		while (current)
+		{
+			parent = current;
+			if (!m_impl.m_cmp(GetKey(current), KeyVal()(v)))
+			{
+				insert_left = true;
+				current = GetLeft(current);
+			}
+			else
+			{
+				insert_left = false;
+				current = GetRight(current);
+			}
+		}
+
+		NodePtr node = CreateNode(v);
+		if (insert_left)
+			SplaySetLeft(parent, node);
+		else
+			SplaySetRight(parent, node);
+
+		Splay(node, &m_impl.m_header);
+
+		return node;
 	}
 
 public:
@@ -312,10 +343,17 @@ public:
 
 	std::pair<iterator, bool> insert_unique(value_type const & val)
 	{
+		iterator it = find(KeyVal()(val));
+
+		if (it == end())
+			return std::make_pair(iterator(Insert(val)), true);
+
+		return std::make_pair(it, false);
 	}
 
 	iterator insert(value_type const & val)
 	{
+		return iterator(Insert(val));
 	}
 
 private:
