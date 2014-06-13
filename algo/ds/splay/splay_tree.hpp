@@ -280,6 +280,15 @@ private:
 		return node;
 	}
 
+	NodeBasePtr Erase(NodePtr node)
+	{
+		NodeBasePtr next = SplaySucc(node);
+		SplayErase(node, &m_impl.m_header);
+		DestroyNode(node);
+
+		return next;
+	}
+
 public:
 	iterator begin() throw()
 	{
@@ -354,6 +363,19 @@ public:
 	iterator insert(value_type const & val)
 	{
 		return iterator(Insert(val));
+	}
+
+	iterator erase(iterator it)
+	{
+		return iterator(Erase(static_cast<NodePtr>(it.m_node)));
+	}
+
+	iterator erase(iterator first, iterator last)
+	{
+		iterator it = first;
+		for (; it != last;)
+			it = erase(it);
+		return it;
 	}
 
 private:

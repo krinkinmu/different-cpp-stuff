@@ -134,6 +134,24 @@ int main()
 	assert(*its.first == 2);
 	assert(*its.second == 2);
 
+	TreeType::iterator it3 = tree.find(5);
+	assert(*it3 == 5);
+	++it3;
+	assert(it3 == tree.end());
+	--it3;
+	TreeType::iterator it4 = tree.erase(it3);
+	assert(it4 == tree.end());
+	TreeType::iterator it5 = tree.find(5);
+	assert(it5 == tree.end());
+
+	std::pair<TreeType::iterator, TreeType::iterator> its2 = tree.equal_range(1);
+	TreeType::iterator it6 = tree.erase(its2.first, its2.second);
+	assert(it6 == its2.second);
+	assert(*it6 == 2);
+
+	TreeType::iterator it7 = tree.find(1);
+	assert(it7 == tree.end());
+
 	std::cout << "test is successfully passed" << std::endl;
 
 	return 0;
