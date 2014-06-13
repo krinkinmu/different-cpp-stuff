@@ -331,7 +331,7 @@ public:
 		return iterator(UpperBound(k));
 	}
 
-	iterator equal_range(Key const & k) throw()
+	std::pair<iterator, iterator> equal_range(Key const & k) throw()
 	{
 		return std::make_pair(lower_bound(k), upper_bound(k));
 	}

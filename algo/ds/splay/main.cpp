@@ -104,6 +104,36 @@ int main()
 	assert(*res5.first == 2);
 	assert(res5.first == tree.begin());
 
+	TreeType::iterator it1 = tree.insert(1);
+	assert(it1 == tree.begin());
+	assert(*it1 == 1);
+	++it1;
+	assert(*it1 == 2);
+	++it1;
+	assert(*it1 == 3);
+	it1++;
+	assert(*it1 == 4);
+	it1++;
+	assert(*it1 == 5);
+	it1++;
+	assert(it1 == tree.end());
+
+	TreeType::iterator it2 = tree.insert(1);
+	assert(*it2 == 1);
+	assert(it2 == tree.begin() || --it2 == tree.begin());
+
+	std::pair<TreeType::iterator, TreeType::iterator> its = tree.equal_range(1);
+	assert(its.first != its.second);
+	assert(its.first == tree.begin());
+	assert(*its.first == 1);
+	++its.first;
+	assert(its.first != its.second);
+	assert(*its.first == 1);
+	its.first++;
+	assert(its.first == its.second);
+	assert(*its.first == 2);
+	assert(*its.second == 2);
+
 	std::cout << "test is successfully passed" << std::endl;
 
 	return 0;
