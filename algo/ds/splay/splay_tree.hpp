@@ -97,6 +97,7 @@ private:
 		try
 		{
 			get_allocator().construct(&tmp->m_value, x);
+			tmp->m_left = tmp->m_right = tmp->m_parent = 0;
 		}
 		catch (...)
 		{
@@ -238,11 +239,13 @@ private:
 	NodeBasePtr Lookup(Key const & k) throw()
 	{
 		NodeBasePtr node = LowerBound(k);
-		if (node != &m_impl.m_header && !m_impl.m_cmp(GetKey(node), k)
-			&& !m_impl.m_cmp(k, GetKey(node)))
+
+		if (node != &m_impl.m_header)
 		{
 			Splay(node, &m_impl.m_header);
-			return node;
+			if (!m_impl.m_cmp(GetKey(node), k)
+					&& !m_impl.m_cmp(k, GetKey(node)))
+				return node;
 		}
 
 		return &m_impl.m_header;
@@ -290,6 +293,11 @@ private:
 	}
 
 public:
+	~SplayTree()
+	{
+		erase(begin(), end());
+	}
+
 	iterator begin() throw()
 	{
 		return iterator(GetMinimum(&m_impl.m_header));
