@@ -83,7 +83,9 @@ private:
 
 	NodePtr GetNode()
 	{
-		return GetAllocator().allocate(1);
+		NodePtr tmp = GetAllocator().allocate(1);
+		tmp->m_left = tmp->m_right = tmp->m_parent = 0;
+		return tmp;
 	}
 
 	void PutNode(NodePtr ptr) throw()
@@ -97,7 +99,6 @@ private:
 		try
 		{
 			get_allocator().construct(&tmp->m_value, x);
-			tmp->m_left = tmp->m_right = tmp->m_parent = 0;
 		}
 		catch (...)
 		{
@@ -115,11 +116,7 @@ private:
 
 	NodePtr CloneNode(NodeConstPtr ptr)
 	{
-		NodePtr tmp = CreateNode(ptr->m_value);
-		tmp->m_parent = 0;
-		tmp->m_left = 0;
-		tmp->m_right = 0;
-		return tmp;
+		return CreateNode(ptr->m_value);
 	}
 
 	static const_reference GetValue(NodeConstPtr x) throw()

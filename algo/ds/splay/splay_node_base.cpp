@@ -71,12 +71,6 @@ namespace
 } /* anonymous namespace */
 
 
-SplayNodeBase::SplayNodeBase() throw()
-	: m_parent(0)
-	, m_left(0)
-	, m_right(0)
-{ }
-
 void SplaySetLeft(SplayNodeBase *parent, SplayNodeBase *child) throw()
 {
 	assert(parent);

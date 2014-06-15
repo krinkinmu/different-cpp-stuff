@@ -6,8 +6,6 @@ struct SplayNodeBase
 	SplayNodeBase *m_parent;
 	SplayNodeBase *m_left;
 	SplayNodeBase *m_right;
-
-	SplayNodeBase() throw();
 };
 
 void SplaySetLeft(SplayNodeBase *parent, SplayNodeBase *child) throw();
