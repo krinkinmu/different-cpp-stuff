@@ -276,6 +276,7 @@ private:
 			SplaySetRight(parent, node);
 
 		Splay(node, &m_impl.m_header);
+		++m_impl.m_size;
 
 		return node;
 	}
@@ -285,14 +286,39 @@ private:
 		NodeBasePtr next = SplaySucc(node);
 		SplayErase(node, &m_impl.m_header);
 		DestroyNode(node);
+		--m_impl.m_size;
 
 		return next;
 	}
 
 public:
+	template <typename InputIterator>
+	SplayTree(InputIterator first, InputIterator last)
+		: m_impl()
+	{
+		insert(first, last);
+	}
+
+	SplayTree() throw()
+		: m_impl()
+	{ }
+
+	SplayTree(SplayTree const & other)
+		: m_impl()
+	{
+		insert(other.begin(), other.end());
+	}
+
 	~SplayTree()
 	{
 		erase(begin(), end());
+	}
+
+	SplayTree & operator=(SplayTree const & other)
+	{
+		erase(begin(), end());
+		insert(other.begin(), other.end());
+		return *this;
 	}
 
 	iterator begin() throw()
@@ -365,6 +391,13 @@ public:
 		return std::make_pair(it, false);
 	}
 
+	template <typename InputIterator>
+	void insert(InputIterator first, InputIterator last)
+	{
+		for (; first != last; ++first)
+			insert(*first);
+	}
+
 	iterator insert(value_type const & val)
 	{
 		return iterator(Insert(val));
@@ -381,6 +414,11 @@ public:
 		for (; it != last;)
 			it = erase(it);
 		return it;
+	}
+
+	size_t size() const throw()
+	{
+		return m_impl.m_size;
 	}
 
 private:
