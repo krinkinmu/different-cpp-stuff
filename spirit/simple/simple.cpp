@@ -141,6 +141,7 @@ struct evaluator
 int main()
 {
     std::string input;
+
     while (std::getline(std::cin, input))
     {
         if (input.empty() || input[0] == 'q' || input[0] == 'Q')
