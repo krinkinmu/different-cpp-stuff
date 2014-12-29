@@ -223,49 +223,49 @@ public:
 	{ erase(begin()); }
 
 	template <typename ... Args>
-	Iterator emplace(Iterator pos, Args && ... args)
+	Iterator emplace(ConstIterator pos, Args && ... args)
 	{
 		ListHead *node = create_node(std::forward<Args>(args)...);
-		insert_before(node, pos.node);
+		insert_before(node, const_cast<ListHead *>(pos.node));
 		return Iterator(node);
 	}
 
 	template <typename It>
-	Iterator insert(Iterator pos, It first, It last)
+	Iterator insert(ConstIterator pos, It first, It last)
 	{
 		while (first != last)
 			pos = insert(pos, *first++);
 		return pos;
 	}
 
-	Iterator insert(Iterator pos, T const &x)
+	Iterator insert(ConstIterator pos, T const &x)
 	{
 		ListHead *node = create_node(x);
-		insert_before(node, pos.node);
+		insert_before(node, const_cast<ListHead *>(pos.node));
 		return Iterator(node);
 	}
 
-	Iterator insert(Iterator pos, T &&x)
+	Iterator insert(ConstIterator pos, T &&x)
 	{
 		ListHead *node = create_node(std::forward<T>(x));
-		insert_before(node, pos.node);
+		insert_before(node, const_cast<ListHead *>(pos.node));
 		return Iterator(node);
 	}
 
-	Iterator erase(Iterator pos)
+	Iterator erase(ConstIterator pos)
 	{
-		ListHead *node = pos.node;
+		ListHead *node = const_cast<ListHead *>(pos.node);
 		ListHead *next = node->next;
 		remove_from_list(node);
 		destroy_node(static_cast<LinkedListNode<T> *>(node));
 		return Iterator(next);
 	}
 
-	Iterator erase(Iterator first, Iterator last)
+	Iterator erase(ConstIterator first, ConstIterator last)
 	{
 		while (first != last)
 			first = erase(first);
-		return first;
+		return Iterator(const_cast<ListHead *>(first.node));
 	}
 };
 
