@@ -167,6 +167,31 @@ struct LinkedListConstIterator : public std::iterator<
 	{ return node != other.node; }
 };
 
+/**
+ * With template operator== type casts are very limited, for example, following
+ * template operator:
+ *
+ * template <typename T>
+ * inline bool operator==(LinkedListConstIterator<T> const &lhs,
+ * 				LinkedListConstIterator<T> const &rhs);
+ *
+ * doesn't work for arguments of type LinkedListIterator and
+ * LinkedListConstIterator for any template parameter in spite of there is
+ * conversion from LinkedListIterator to LinkedListConstIterator because after
+ * substitution of some concrete type X instead of T we get
+ *
+ * inline bool operator==(LinkedListIterator<X> const &lhs,
+ * 				LinkedListConstIterator<X> const &rhs);
+ *
+ * not
+ *
+ * inline bool operator==(LinkedListConstIterator<X> const &lhs,
+ * 				LinkedListConstIterator<X> const &rhs);
+ *
+ * So i need member function of operator== in LinkedListConstIterator<T> and
+ * LinkedListIterator<T> this enables type casts for second argument of
+ * operator, also i need following operator to cover one last case.
+ **/
 template <typename T>
 inline bool operator==(LinkedListIterator<T> const &lhs,
 			LinkedListConstIterator<T> const &rhs)

@@ -153,7 +153,13 @@ public:
 	~LinkedList()
 	{ clear(); }
 
-	// TODO: add comment about copy and swap idiom
+	/**
+	 * It is extremely useful idom - copy and swap. It is universal way
+	 * of assignment operator implementation (not only), if there is swap
+	 * method that doesn't throw exceptions than such assignment opertor
+	 * meets strong exception safety guarantee. More about exception safety
+	 * guaranries here http://www.gotw.ca/gotw/082.htm.
+	 **/
 	LinkedList &operator=(LinkedList other)
 	{
 		swap(other);
@@ -167,7 +173,12 @@ public:
 		return *this;
 	}
 
-	// TODO: add comment about using std::swap
+	/**
+	 * It is possible that there is swap function for NodeAllocator and if so
+	 * we want to use it instead std::swap. For this reason i use using
+	 * std::swap. More details in Scott Meyers, Effective C++ Third Edition,
+	 * Item 25: "Consider support for a non-throwing swap".
+	 **/
 	void swap(LinkedList &other) noexcept
 	{
 		using std::swap;
@@ -181,6 +192,9 @@ public:
 	bool empty() const
 	{ return begin() == end(); }
 
+	/**
+	 * Attention time complexity of size method is O(n)
+	 **/
 	size_t size() const
 	{ return static_cast<size_t>(std::distance(begin(), end())); }
 
