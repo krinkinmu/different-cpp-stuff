@@ -37,16 +37,19 @@ namespace detail
 	struct LinkedListBase {
 		using Node = LinkedListNode<T>;
 		using ValueAlloc = Alloc;
-		using NodeAlloc = typename Alloc::template rebind<Node>::other;
+		using ValueAllocTrait = std::allocator_traits<ValueAlloc>;
+		using NodeAlloc = typename
+			ValueAllocTrait::template rebind_alloc<Node>;
+		using NodeAllocTrait = std::allocator_traits<NodeAlloc>;
 		using Impl = LinkedListImpl<T, NodeAlloc>;
 
 		LinkedListImpl<T, NodeAlloc> impl;
 
 		Node *get_node()
-		{ return impl.allocate(1); }
+		{ return NodeAllocTrait::allocate(impl, 1); }
 
 		void put_node(Node *node)
-		{ impl.deallocate(node, 1); }
+		{ NodeAllocTrait::deallocate(impl, node, 1); }
 
 		NodeAlloc &node_allocator()
 		{ return *static_cast<NodeAlloc *>(&impl); }
@@ -60,7 +63,8 @@ namespace detail
 			Node *node = get_node();
 
 			try {
-				node_allocator().construct(
+				NodeAllocTrait::construct(
+					impl,
 					node,
 					std::forward<Args>(args)...
 				);
@@ -74,7 +78,7 @@ namespace detail
 
 		void destroy_node(Node *node)
 		{
-			node_allocator().destroy(node);
+			NodeAllocTrait::destroy(impl, node);
 			put_node(node);
 		}
 
@@ -93,7 +97,7 @@ namespace detail
 		 * ListNode allocator.
 		 **/
 		LinkedListBase(NodeAlloc const &a)
-		: impl(a)
+		: impl(NodeAllocTrait::select_on_container_copy_construction(a))
 		{ }
 
 		/**
@@ -122,8 +126,11 @@ class LinkedList : private detail::LinkedListBase<T, Alloc> {
 	using Base::destroy_node;
 
 public:
-	using Iterator = LinkedListIterator<T>;
-	using ConstIterator = LinkedListConstIterator<T>;
+	using iterator = LinkedListIterator<T>;
+	using const_iterator = LinkedListConstIterator<T>;
+	using value_type = typename iterator::value_type;
+	using reference = typename iterator::reference;
+	using const_reference = typename const_iterator::reference;
 
 	LinkedList()
 	: Base()
@@ -141,6 +148,11 @@ public:
 			ValueAlloc const &a = ValueAlloc())
 	: Base(NodeAlloc(a))
 	{ insert(begin(), other.begin(), other.end()); }
+
+	template <typename It>
+	LinkedList(It first, It last, ValueAlloc const &a = ValueAlloc())
+	: Base(NodeAlloc(a))
+	{ insert(end(), first, last); }
 
 	/**
 	 * LinkedListBase contains all the data, so it is safe to cast
@@ -198,17 +210,17 @@ public:
 	size_t size() const
 	{ return static_cast<size_t>(std::distance(begin(), end())); }
 
-	Iterator begin()
-	{ return Iterator(impl.head.next); }
+	iterator begin()
+	{ return iterator(impl.head.next); }
 
-	ConstIterator begin() const
-	{ return ConstIterator(impl.head.next); }
+	const_iterator begin() const
+	{ return const_iterator(impl.head.next); }
 
-	Iterator end()
-	{ return Iterator(&impl.head); }
+	iterator end()
+	{ return iterator(&impl.head); }
 
-	ConstIterator end() const
-	{ return ConstIterator(&impl.head); }
+	const_iterator end() const
+	{ return const_iterator(&impl.head); }
 
 	void push_back(T const &x)
 	{ insert(end(), x); }
@@ -237,49 +249,51 @@ public:
 	{ erase(begin()); }
 
 	template <typename ... Args>
-	Iterator emplace(ConstIterator pos, Args && ... args)
+	iterator emplace(const_iterator pos, Args && ... args)
 	{
 		ListHead *node = create_node(std::forward<Args>(args)...);
 		insert_before(node, const_cast<ListHead *>(pos.node));
-		return Iterator(node);
+		return iterator(node);
 	}
 
 	template <typename It>
-	Iterator insert(ConstIterator pos, It first, It last)
+	iterator insert(const_iterator pos, It first, It last)
 	{
-		while (first != last)
-			pos = insert(pos, *first++);
-		return pos;
+		while (first != last) {
+			last--;
+			pos = insert(pos, *last);
+		}
+		return iterator(const_cast<ListHead *>(pos.node));
 	}
 
-	Iterator insert(ConstIterator pos, T const &x)
+	iterator insert(const_iterator pos, T const &x)
 	{
 		ListHead *node = create_node(x);
 		insert_before(node, const_cast<ListHead *>(pos.node));
-		return Iterator(node);
+		return iterator(node);
 	}
 
-	Iterator insert(ConstIterator pos, T &&x)
+	iterator insert(const_iterator pos, T &&x)
 	{
 		ListHead *node = create_node(std::forward<T>(x));
 		insert_before(node, const_cast<ListHead *>(pos.node));
-		return Iterator(node);
+		return iterator(node);
 	}
 
-	Iterator erase(ConstIterator pos)
+	iterator erase(const_iterator pos)
 	{
 		ListHead *node = const_cast<ListHead *>(pos.node);
 		ListHead *next = node->next;
 		remove_from_list(node);
 		destroy_node(static_cast<LinkedListNode<T> *>(node));
-		return Iterator(next);
+		return iterator(next);
 	}
 
-	Iterator erase(ConstIterator first, ConstIterator last)
+	iterator erase(const_iterator first, const_iterator last)
 	{
 		while (first != last)
 			first = erase(first);
-		return Iterator(const_cast<ListHead *>(first.node));
+		return iterator(const_cast<ListHead *>(first.node));
 	}
 };
 
