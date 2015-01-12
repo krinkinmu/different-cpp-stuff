@@ -295,6 +295,9 @@ public:
 			first = erase(first);
 		return iterator(const_cast<ListHead *>(first.node));
 	}
+
+	void reverse()
+	{ reverse_list(&impl.head); }
 };
 
 #endif /*__LINKED_LIST_BASE_HPP__`*/

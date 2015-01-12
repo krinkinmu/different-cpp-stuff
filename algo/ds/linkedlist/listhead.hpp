@@ -28,4 +28,9 @@ void insert_before(struct ListHead *new_node, struct ListHead *pos);
  **/
 void remove_from_list(struct ListHead *node);
 
+/**
+ * Reverses linked list with specified node as a dummy head element.
+ **/
+void reverse_list(struct ListHead *head);
+
 #endif /*__LIST_HEAD_HPP__*/

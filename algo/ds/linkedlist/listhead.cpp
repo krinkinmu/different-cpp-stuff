@@ -30,3 +30,17 @@ static inline void remove_between(struct ListHead *before,
 
 void remove_from_list(struct ListHead *node)
 { remove_between(node->prev, node->next); }
+
+
+void reverse_list(struct ListHead *head)
+{
+	struct ListHead *pos = head;
+
+	do {
+		struct ListHead *next = pos->next;
+
+		pos->next = pos->prev;
+		pos->prev = next;
+		pos = next;
+	} while (pos != head);
+}
