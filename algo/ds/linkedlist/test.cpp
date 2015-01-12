@@ -84,12 +84,44 @@ void run_copy_test(size_t size)
 	assert(std::equal(begin(source), end(source), begin(copy)));
 }
 
+void run_reverse_simple_test(size_t size)
+{
+	LinkedList<int> source;
+	fill_random(source, size);
+	LOG_CONTAINER(source);
+
+	LinkedList<int> copy(source);
+	LOG_CONTAINER(copy);
+	copy.reverse();
+	copy.reverse();
+	assert(source.size() == copy.size());
+	assert(std::equal(begin(source), end(source), begin(copy)));
+}
+
+void run_reverse_test(size_t size)
+{
+	using iterator = typename LinkedList<int>::iterator;
+
+	LinkedList<int> source;
+	fill_random(source, size);
+	LOG_CONTAINER(source);
+
+	LinkedList<int> copy(source);
+	copy.reverse();
+	LOG_CONTAINER(copy);
+	assert(source.size() == copy.size());
+	assert(std::equal(begin(source), end(source),
+		std::reverse_iterator<iterator>(end(copy))));
+}
+
 int main(void)
 {
 	for (size_t size : {0, 10, 100, 1000, 10000}) {
 		run_fill_test(size);
 		run_range_construct_test(size);
 		run_copy_test(size);
+		run_reverse_simple_test(size);
+		run_reverse_test(size);
 	}
 
 	return 0;
