@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -Wextra -Werror -pedantic -std=c++11
+CFLAGS = -g -Wall -Wextra -Werror -pedantic -std=c++11
 
 all: test
 
