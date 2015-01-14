@@ -44,7 +44,7 @@ namespace detail
 		using NodeAllocTrait = std::allocator_traits<NodeAlloc>;
 		using Impl = LinkedListImpl<T, NodeAlloc>;
 
-		LinkedListImpl<T, NodeAlloc> impl;
+		Impl impl;
 
 		Node *get_node()
 		{ return NodeAllocTrait::allocate(impl, 1); }
