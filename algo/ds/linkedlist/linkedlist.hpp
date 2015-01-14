@@ -1,8 +1,9 @@
 #ifndef __LINKED_LIST_BASE_HPP__
 #define __LINKED_LIST_BASE_HPP__
 
-#include <memory>
 #include "linkedlistnode.hpp"
+
+#include <memory>
 
 /**
  * I hide LinkedListImpl in detail namespace, but more appropriate way is

@@ -10,9 +10,11 @@
  * of type struct ListHead not of type LinkedListNode.
  **/
 
-#include <cstddef>
-#include <utility>
 #include "listhead.hpp"
+
+#include <iterator>
+#include <utility>
+#include <cstddef>
 
 template <typename T>
 struct LinkedListNode : public ListHead {
@@ -68,7 +70,7 @@ struct LinkedListIterator : public std::iterator<
 	 * addressof.
 	 **/
 	Ptr operator->() const
-	{ return std::addressof(static_cast<Node *>(node))->data; }
+	{ return std::addressof(static_cast<Node *>(node)->data); }
 
 	Self &operator++()
 	{
@@ -96,10 +98,10 @@ struct LinkedListIterator : public std::iterator<
 		return tmp;
 	}
 
-	bool operator==(LinkedListIterator const &other) const
+	bool operator==(Self const &other) const
 	{ return node == other.node; }
 
-	bool operator!=(LinkedListIterator const &other) const
+	bool operator!=(Self const &other) const
 	{ return node != other.node; }
 };
 
@@ -160,10 +162,10 @@ struct LinkedListConstIterator : public std::iterator<
 		return tmp;
 	}
 
-	bool operator==(LinkedListConstIterator const &other) const
+	bool operator==(Self const &other) const
 	{ return node == other.node; }
 
-	bool operator!=(LinkedListConstIterator const &other) const
+	bool operator!=(Self const &other) const
 	{ return node != other.node; }
 };
 

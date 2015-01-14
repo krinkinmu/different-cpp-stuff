@@ -1,10 +1,11 @@
+#include "linkedlist.hpp"
+
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
 #include <iterator>
 #include <vector>
-#include "linkedlist.hpp"
 
 template <typename Ct>
 void fill_random(Ct &ct, size_t size)
@@ -116,7 +117,7 @@ void run_reverse_test(size_t size)
 
 int main(void)
 {
-	for (size_t size : {0, 10, 100, 1000, 10000}) {
+	for (size_t size : {0, 1, 10, 100, 1000, 10000}) {
 		run_fill_test(size);
 		run_range_construct_test(size);
 		run_copy_test(size);
