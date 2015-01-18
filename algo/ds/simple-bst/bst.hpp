@@ -27,14 +27,14 @@ struct BSTImpl : public Allocator {
 	{ wrap_node(&head); }
 };
 
-template <typename Key, typename Val, typename KeyVal, typename Cmp,
-	typename Allocator>
+template <typename Val, typename Cmp, typename Allocator>
 struct BinarySearchTreeBase {
 	using Node = BSTNode<Val>;
 	using ValueAlloc = Allocator;
 	using ValueAllocTrait = std::allocator_traits<ValueAlloc>;
 	using NodeAlloc = typename
 		ValueAllocTrait::template rebind_alloc<Node>;
+	using NodeAllocTrait = std::allocator_traits<NodeAlloc>;
 	using Impl = BSTImpl<Cmp, NodeAlloc>;
 
 	Impl impl;
@@ -48,7 +48,7 @@ struct BinarySearchTreeBase {
 	NodeAlloc &node_allocator()
 	{ return *static_cast<NodeAlloc *>(&impl); }
 
-	NodeAlloc const &node_allocator()
+	NodeAlloc const &node_allocator() const
 	{ return *static_cast<NodeAlloc const *>(&impl); }
 
 	Cmp &key_comparator()
@@ -68,6 +68,7 @@ struct BinarySearchTreeBase {
 				node,
 				std::forward<Args>(args)...
 			);
+			wrap_node(node);
 		} catch (...) {
 			put_node(node);
 			throw;
@@ -97,12 +98,12 @@ struct BinarySearchTreeBase {
 };
 
 template <typename Key, typename Val, typename KeyOf, typename KeyCmp,
-	typename Allocator = std::allocator<T>>
-class BinarySearchTree : private BinarySearchTreeBase<Key, Val, KeyCmp,
-							Allocator> {
-	using Base = BinarySearchTreeBase<Key, Val, KeyCmp, Allocator>;
+	typename Allocator = std::allocator<Val>>
+class BinarySearchTree : private BinarySearchTreeBase<Val, KeyCmp, Allocator> {
+	using Base = BinarySearchTreeBase<Val, KeyCmp, Allocator>;
 	using ValueAlloc = typename Base::ValueAlloc;
 	using NodeAlloc = typename Base::NodeAlloc;
+	using Self = BinarySearchTree<Key, Val, KeyOf, KeyCmp, Allocator>;
 
 	using Base::impl;
 	using Base::node_allocator;
@@ -121,7 +122,7 @@ public:
 	: Base()
 	{ }
 
-	explicit BinarySearchTree(KeyCmp const &cmp,
+	explicit BinarySearchTree(KeyCmp const &cmp = KeyCmp(),
 					Allocator const &a = Allocator())
 	: Base(cmp, NodeAlloc(a))
 	{ }
@@ -131,32 +132,32 @@ public:
 	{ }
 
 	template <typename It>
-	BinarySearchTree(It first, It last, KeyCmp const &cmp,
+	BinarySearchTree(It first, It last, KeyCmp const &cmp = KeyCmp(),
 				Allocator const &a = Allocator())
 	: Base(cmp, NodeAlloc(a))
 	{ insert(first, last); }
 
-	BinarySearchTree(BinarySearchTree &&other)
+	BinarySearchTree(Self &&other)
 	: Base(std::move(other))
 	{ }
 
 	~BinarySearchTree()
 	{ clear(); }
 
-	BinarySearchTree &operator=(BinarySearchTree other)
+	BinarySearchTree &operator=(Self other)
 	{
 		swap(other);
 		return *this;
 	}
 
-	BinarySearchTree &operator=(BinarySearchTree &&other)
+	BinarySearchTree &operator=(Self &&other)
 	{
 		clear();
 		swap(other);
 		return *this;
 	}
 
-	void swap(BinarySearchTree &other)
+	void swap(Self &other)
 	{
 		using std::swap;
 		swap(impl.head, other.impl.head);
@@ -174,7 +175,7 @@ public:
 	{ return static_cast<size_t>(std::distance(begin(), end())); }
 
 	iterator begin()
-	{ return iterator(impl.head.left); }
+	{ return iterator(impl.head.right); }
 
 	const_iterator begin() const
 	{ return const_iterator(impl.head.right); }
@@ -185,34 +186,136 @@ public:
 	const_iterator end() const
 	{ return const_iterator(&impl.head); }
 
+	iterator insert(Val const &x)
+	{ return insert(Val(x)); }
+
+	iterator insert(Val &&x)
+	{ return emplace(std::forward<Val>(x)); }
+
+	template <typename It>
+	void insert(It first, It last)
+	{
+		while (first != last)
+			insert(*first++);
+	}
+
+	template <typename ... Args>
+	iterator emplace(Args && ... args)
+	{
+		BSTNode<Val> *new_node =
+				create_node(std::forward<Args>(args)...);
+		TreeNode *node = lower_bound(KeyOf()(new_node->data)).node;
+
+		if (node->left != node) {
+			node = const_cast<TreeNode *>(right_most(node->left));
+			add_right(new_node, node);
+		} else {
+			add_left(new_node, node);
+			impl.head.right = impl.head.right->left;
+		}
+		return iterator(new_node);
+	}
+
+	const_iterator lower_bound(Key const &key) const
+	{
+		TreeNode const *parent = &impl.head;
+		TreeNode const *child = impl.head.left;
+		TreeNode const *x = parent;
+
+		KeyCmp const &keycmp = key_comparator();
+		KeyOf keyof;
+
+		while (child != parent) {
+			BSTNode<Val> const *node =
+				static_cast<BSTNode<Val> const *>(child);
+
+			parent = child;
+			if (!keycmp(keyof(node->data), key)) {
+				child = node->left;
+				x = node;
+			} else {
+				child = node->right;
+			}
+		}
+
+		return const_iterator(x);
+	}
+
+	const_iterator upper_bound(Key const &key) const
+	{
+		TreeNode const *parent = &impl.head;
+		TreeNode const *child = impl.head.left;
+		TreeNode const *x = parent;
+
+		KeyCmp const &keycmp = key_comparator();
+		KeyOf keyof;
+
+		while (child != parent) {
+			BSTNode<Val> const *node =
+				static_cast<BSTNode<Val> const *>(child);
+
+			parent = child;
+			if (keycmp(key, keyof(node->data))) {
+				child = node->left;
+				x = child;
+			} else {
+				child = node->right;
+			}
+		}
+
+		return const_iterator(x);
+	}
+
+	iterator lower_bound(Key const &key)
+	{
+		Self const *self = const_cast<Self const *>(this);
+		const_iterator it = self->lower_bound(key);
+
+		return iterator(const_cast<TreeNode *>(it.node));
+	}
+
+	iterator upper_bound(Key const &key)
+	{
+		Self const *self = const_cast<Self const *>(this);
+		const_iterator it = self->upper_bound(key);
+
+		return iterator(const_cast<TreeNode *>(it.node));
+	}
+
+	const_iterator find(Key const &key) const
+	{
+		const_iterator it = lower_bound(key);
+		KeyCmp const &keycmp = key_comparator();
+		KeyOf keyof;
+
+		if (it == end())
+			return it;
+
+		if (keycmp(keyof(*it), key) || keycmp(key, keyof(*it)))
+			return end();
+
+		return it;
+	}
+
+	iterator find(Key const &key)
+	{
+		Self const *self = const_cast<Self const *>(this);
+		const_iterator it = self->find(key);
+
+		return iterator(const_cast<TreeNode *>(it.node));
+	}
+
+	size_t count(Key const &key) const
+	{ return std::distance(lower_bound(key), upper_bound(key)); }
+	
 	iterator erase(const_iterator it)
 	{ return iterator(const_cast<TreeNode *>(it.node)); }
 
 	iterator erase(const_iterator first, const_iterator last)
-	{ return iterator(const_cast<TreeNode *>(first.node)); }
-
-	iterator insert(Val const &x)
-	{ return iterator(0); }
-
-	iterator insert(Val &&x)
-	{ return iterator(0); }
-
-	template <typename It>
-	void insert(It first, It last)
-	{ }
-
-	template <typename ... Args>
-	iterator emplace(Args && ... args)
-	{ return iterator(0); }
-
-	iterator find(Key const &key)
-	{ return iterator(0); }
-
-	const_iterator find(Key const &key) const
-	{ return iterator(0); }
-
-	size_t count(Key const &key) const
-	{ return 0; }
+	{
+		(void) last;
+		return iterator(const_cast<TreeNode *>(first.node));
+	}
 };
 
 #endif /*__BST_HPP__*/

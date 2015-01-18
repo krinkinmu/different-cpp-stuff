@@ -80,12 +80,12 @@ struct TreeIterator : public std::iterator<
 };
 
 template <typename T>
-struct TreeConstIterator : public std::iterator>
+struct TreeConstIterator : public std::iterator<
 			std::bidirectional_iterator_tag, T,
 			ptrdiff_t, T const *, T const &> {
 	using Self = TreeConstIterator<T>;
 	using Iter = TreeIterator<T>;
-	using Node = TreeNode const;
+	using Node = BSTNode<T> const;
 	using Trait = std::iterator_traits<Self>;
 	using Ref = typename Trait::reference;
 	using Ptr = typename Trait::pointer;
@@ -108,7 +108,7 @@ struct TreeConstIterator : public std::iterator>
 	{ return static_cast<Node *>(node)->data; }
 
 	Ptr operator->() const
-	{ return std::addressof(static_cast<TreeNode *>(node)->data); }
+	{ return std::addressof(static_cast<Node *>(node)->data); }
 
 	Self &operator++()
 	{
