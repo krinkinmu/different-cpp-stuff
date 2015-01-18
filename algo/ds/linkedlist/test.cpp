@@ -30,9 +30,9 @@ void print_container(Ct const &ct)
 		std::cout << #ct << ": ";	\
 		print_container(ct);		\
 		std::cout << std::endl;		\
-	} while (0);
+	} while (0)
 #else
-#define LOG_CONTAINER(ct) do { } while(0);
+#define LOG_CONTAINER(ct) do { } while(0)
 #endif
 
 template <typename Ct>
