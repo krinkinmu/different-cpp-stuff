@@ -83,6 +83,69 @@ struct BinarySearchTreeBase {
 		put_node(node);
 	}
 
+	void detach_leaf(TreeNode *node)
+	{
+		if (is_left(node))
+			node->parent->left = node->parent;
+		else
+			node->parent->right = node->parent;
+	}
+
+	void detach_left_edge(TreeNode *node)
+	{
+		if (is_left(node))
+			add_left(node->left, node->parent);
+		else
+			add_right(node->left, node->parent);
+	}
+
+	void detach_right_edge(TreeNode *node)
+	{
+		if (is_left(node))
+			add_left(node->right, node->parent);
+		else
+			add_right(node->right, node->parent);
+	}
+
+	void detach_common(TreeNode *node)
+	{
+		TreeNode *prev = const_cast<TreeNode *>(right_most(node->left));
+
+		detach_node(prev);
+		add_right(node->right, prev);
+
+		if (node->left != node)
+			add_left(node->left, prev);
+
+		if (is_left(node))
+			add_left(prev, node->parent);
+		else
+			add_right(prev, node->parent);
+	}
+
+	void detach_node(TreeNode *node)
+	{
+		bool const has_left = node->left != node;
+		bool const has_right = node->right != node;
+
+		if (!has_left && !has_right) {
+			detach_leaf(node);
+			return;
+		}
+
+		if (!has_right) {
+			detach_left_edge(node);
+			return;
+		}
+
+		if (!has_left) {
+			detach_right_edge(node);
+			return;
+		}
+
+		detach_common(node);
+	}
+
 	BinarySearchTreeBase()
 	: impl()
 	{ }
@@ -103,6 +166,7 @@ class BinarySearchTree : private BinarySearchTreeBase<Val, KeyCmp, Allocator> {
 	using Base = BinarySearchTreeBase<Val, KeyCmp, Allocator>;
 	using ValueAlloc = typename Base::ValueAlloc;
 	using NodeAlloc = typename Base::NodeAlloc;
+	using Node = typename Base::Node;
 	using Self = BinarySearchTree<Key, Val, KeyOf, KeyCmp, Allocator>;
 
 	using Base::impl;
@@ -110,6 +174,7 @@ class BinarySearchTree : private BinarySearchTreeBase<Val, KeyCmp, Allocator> {
 	using Base::create_node;
 	using Base::destroy_node;
 	using Base::key_comparator;
+	using Base::detach_node;
 
 public:
 	using iterator = TreeIterator<Val>;
@@ -309,11 +374,23 @@ public:
 	{ return std::distance(lower_bound(key), upper_bound(key)); }
 	
 	iterator erase(const_iterator it)
-	{ return iterator(const_cast<TreeNode *>(it.node)); }
+	{
+		Node *node = const_cast<Node *>(
+					static_cast<Node const *>(it.node));
+		TreeNode *next = const_cast<TreeNode *>(next_node(node));
+
+		detach_node(node);
+		if (impl.head.right == node)
+			impl.head.right = next;
+		destroy_node(node);
+
+		return iterator(next);		
+	}
 
 	iterator erase(const_iterator first, const_iterator last)
 	{
-		(void) last;
+		while (first != last)
+			first = erase(first);
 		return iterator(const_cast<TreeNode *>(first.node));
 	}
 };

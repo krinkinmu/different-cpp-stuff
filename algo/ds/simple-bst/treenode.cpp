@@ -33,10 +33,10 @@ struct TreeNode const *right_most(struct TreeNode const *node)
 	return node;
 }
 
-static inline int is_left(struct TreeNode const *node)
+int is_left(struct TreeNode const *node)
 { return node->parent != node && node->parent->left == node; }
 
-static inline int is_right(struct TreeNode const *node)
+int is_right(struct TreeNode const *node)
 { return node->parent != node && node->parent->right == node; }
 
 struct TreeNode const *next_node(struct TreeNode const *node)
