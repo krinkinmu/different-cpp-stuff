@@ -7,7 +7,8 @@ TIMER2_OBJS := timer2.o
 TIMER3_OBJS := timer3.o
 TIMER4_OBJS := timer4.o
 TIMER5_OBJS := timer5.o
-TARGETS := timer1 timer2 timer3 timer4 timer5
+TIMER6_OBJS := timer6.o
+TARGETS := timer1 timer2 timer3 timer4 timer5 timer6
 
 all: $(TARGETS)
 
@@ -26,12 +27,15 @@ timer4: $(TIMER4_OBJS)
 timer5: $(TIMER5_OBJS)
 	$(CXX) $(LIBS) $^ -o $@
 
+timer6: $(TIMER6_OBJS)
+	$(CXX) $(LIBS) $^ -o $@
+
 -include: *.d
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -rf *.o $(TARGETS)
+	rm -rf *.o *.d $(TARGETS)
 
 .PHONY: clean
