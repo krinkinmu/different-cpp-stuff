@@ -25,8 +25,8 @@ struct fixed_vector_holder : public Alloc
 	{ }
 
 	explicit fixed_vector_holder(size_type size,
-					const allocator_type& alloc)
-		: allocator_type(alloc)
+					const allocator_type& a)
+		: allocator_type(a)
 		, begin_(AllocTraits::allocate(alloc(), size))
 		, end_(begin_ + size)
 		, free_(begin_)
@@ -46,7 +46,7 @@ struct fixed_vector_holder : public Alloc
 	~fixed_vector_holder()
 	{
 		clear();
-		AllocTraits::deallocate(alloc(), begin_);
+		AllocTraits::deallocate(alloc(), begin_, end_ - begin_);
 	}
 
 	fixed_vector_holder(const fixed_vector_holder&) = delete;
@@ -78,13 +78,13 @@ struct fixed_vector_holder : public Alloc
 		std::swap(free_, other.free_);
 	}
 
-	pointer *begin_;
-	pointer *end_;
-	pointer *free_;
+	pointer begin_;
+	pointer end_;
+	pointer free_;
 };
 
 
-template < typename T, typename Alloc = std::allocator<T> >
+template <typename T, typename Alloc = std::allocator<T>>
 class fixed_vector
 {
 	using AllocTraits = std::allocator_traits<Alloc>;
