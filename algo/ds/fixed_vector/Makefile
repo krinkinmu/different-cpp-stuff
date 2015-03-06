@@ -4,7 +4,10 @@ CXXFLAGS = -Wall -Wextra -Werror -std=c++11 -pedantic -MMD
 
 all: test
 
-TESTS = access_test.o
+TESTS = \
+	main_test.cpp \
+	size_test.o \
+	bound_checks_test.o
 
 test: $(TESTS)
 	$(CXX) $(LIBS) $^ -o $@
