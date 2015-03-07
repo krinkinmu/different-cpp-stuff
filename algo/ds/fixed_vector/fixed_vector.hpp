@@ -192,8 +192,7 @@ public:
 	{
 		if (empty())
 			throw std::length_error("fixed_vector is empty");
-		AllocTraits::destroy(get_allocator(), holder_.free_ - 1);
-		--holder_.free_;
+		AllocTraits::destroy(get_allocator(), --holder_.free_);
 	}
 
 	void swap(fixed_vector &other) noexcept
