@@ -188,11 +188,11 @@ public:
 	void clear() noexcept
 	{ holder_.clear(); }
 
-	void pop_back() noexcept
+	void pop_back()
 	{
 		if (empty())
 			throw std::length_error("fixed_vector is empty");
-		AllocTraits::destroy(get_allocator(), holder_.free_);
+		AllocTraits::destroy(get_allocator(), holder_.free_ - 1);
 		--holder_.free_;
 	}
 
