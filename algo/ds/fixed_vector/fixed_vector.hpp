@@ -162,17 +162,15 @@ public:
 	{
 		if (size() == capacity())
 			throw std::length_error("fixed_vector is full");
-		AllocTraits::construct(get_allocator(), holder_.free_, x);
-		++holder_.free_;
+		AllocTraits::construct(get_allocator(), holder_.free_++, x);
 	}
 
 	void push_back(value_type &&x)
 	{
 		if (size() == capacity())
 			throw std::length_error("fixed_vector is full");
-		AllocTraits::construct(get_allocator(), holder_.free_,
+		AllocTraits::construct(get_allocator(), holder_.free_++,
 					std::move(x));
-		++holder_.free_;
 	}
 
 	template <typename ... Args>
@@ -180,9 +178,8 @@ public:
 	{
 		if (size() == capacity())
 			throw std::length_error("fixed_vector is full");
-		AllocTraits::construct(get_allocator(), holder_.free_,
+		AllocTraits::construct(get_allocator(), holder_.free_++,
 					std::forward(args)...);
-		++holder_.free_;
 	}
 
 	void clear() noexcept
