@@ -7,7 +7,8 @@ all: test
 TESTS = \
 	main_test.cpp \
 	size_test.o \
-	bound_checks_test.o
+	bound_checks_test.o \
+	access_test.o
 
 test: $(TESTS)
 	$(CXX) $(LIBS) $^ -o $@
