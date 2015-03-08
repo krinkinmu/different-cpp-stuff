@@ -12,13 +12,13 @@ BOOST_AUTO_TEST_SUITE(SizeTests)
 BOOST_AUTO_TEST_CASE(testSizeEmptyInt)
 {
 	fixed_vector<int> empty(42);
-	BOOST_CHECK(empty.size() == 0);
+	BOOST_CHECK_EQUAL(empty.size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(testSizeEmptyString)
 {
 	fixed_vector<std::string> empty(42);
-	BOOST_CHECK(empty.size() == 0);
+	BOOST_CHECK_EQUAL(empty.size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(testEmptyEmptyInt)
@@ -37,18 +37,18 @@ BOOST_AUTO_TEST_CASE(testSizeNonEmptyInt)
 {
 	fixed_vector<int> nonempty(42);
 	nonempty.push_back(1);
-	BOOST_CHECK(nonempty.size() == 1);
+	BOOST_CHECK_EQUAL(nonempty.size(), 1);
 	nonempty.push_back(42);
-	BOOST_CHECK(nonempty.size() == 2);
+	BOOST_CHECK_EQUAL(nonempty.size(), 2);
 }
 
 BOOST_AUTO_TEST_CASE(testSizeNonEmptyString)
 {
 	fixed_vector<std::string> nonempty(42);
 	nonempty.push_back("test");
-	BOOST_CHECK(nonempty.size() == 1);
+	BOOST_CHECK_EQUAL(nonempty.size(), 1);
 	nonempty.push_back("passed");
-	BOOST_CHECK(nonempty.size() == 2);
+	BOOST_CHECK_EQUAL(nonempty.size(), 2);
 }
 
 BOOST_AUTO_TEST_CASE(testEmptyNonEmptyInt)
@@ -75,8 +75,8 @@ BOOST_AUTO_TEST_CASE(testSizeFullInt)
 	fixed_vector<int> full(CAPACITY);
 	for (size_t i = 0; i != full.capacity(); ++i)
 		full.push_back(i);
-	BOOST_CHECK(full.size() == full.capacity());
-	BOOST_CHECK(full.size() == CAPACITY);
+	BOOST_CHECK_EQUAL(full.size(), full.capacity());
+	BOOST_CHECK_EQUAL(full.size(), CAPACITY);
 }
 
 BOOST_AUTO_TEST_CASE(testSizeFullString)
@@ -85,8 +85,8 @@ BOOST_AUTO_TEST_CASE(testSizeFullString)
 	fixed_vector<std::string> full(CAPACITY);
 	for (size_t i = 0; i != full.capacity(); ++i)
 		full.push_back(std::to_string(i));
-	BOOST_CHECK(full.size() == full.capacity());
-	BOOST_CHECK(full.size() == CAPACITY);
+	BOOST_CHECK_EQUAL(full.size(), full.capacity());
+	BOOST_CHECK_EQUAL(full.size(), CAPACITY);
 }
 
 BOOST_AUTO_TEST_CASE(testEmptyFullInt)
@@ -108,15 +108,15 @@ BOOST_AUTO_TEST_CASE(testEmptyFullString)
 BOOST_AUTO_TEST_CASE(testSizeZeroCapacityInt)
 {
 	fixed_vector<int> zero(0);
-	BOOST_CHECK(zero.capacity() == 0);
-	BOOST_CHECK(zero.size() == 0);
+	BOOST_CHECK_EQUAL(zero.capacity(), 0);
+	BOOST_CHECK_EQUAL(zero.size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(testSizeZeroCapacityString)
 {
 	fixed_vector<std::string> zero(0);
-	BOOST_CHECK(zero.capacity() == 0);
-	BOOST_CHECK(zero.size() == 0);
+	BOOST_CHECK_EQUAL(zero.capacity(), 0);
+	BOOST_CHECK_EQUAL(zero.size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(testEmptyZeroCapacityInt)
